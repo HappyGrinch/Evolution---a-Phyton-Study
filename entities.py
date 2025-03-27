@@ -3,7 +3,7 @@
 import tkinter as tk
 import random
 import time
-from globals import mutation_loss_rate, paused, unique_object_counter
+import globals
 
 def berechne_farbe_beute(generation):
     green_value = max(255 - (generation - 1) * 20, 0)
@@ -21,13 +21,12 @@ def kollidieren(obj1, obj2):
 
 class Beute:
     def __init__(self, canvas, x, y, size=20, generation=1, genome=None):
-        from globals import unique_object_counter
         self.canvas = canvas
         self.size = size
         self.x = x
         self.y = y
         self.generation = generation
-        # Wenn kein Genom übergeben wird, nur "essen" und "bewegen" setzen.
+        # Wenn kein Genom übergeben wird, werden nur "essen" und "bewegen" gesetzt.
         if genome is None:
             self.genome = {"essen": True, "bewegen": True}
         else:
@@ -39,23 +38,19 @@ class Beute:
         self.starve_job = None
         self.blinking = False
 
-        # Erhöhe den globalen Zähler – dies sollte idealerweise über eine Funktion erfolgen.
-        from globals import unique_object_counter
-        unique_object_counter += 1
-        self.obj_id = f"{self.generation}-{unique_object_counter}"
+        globals.unique_object_counter += 1
+        self.obj_id = f"{self.generation}-{globals.unique_object_counter}"
 
         self.color = berechne_farbe_beute(self.generation)
-        self.rect_id = self.canvas.create_rectangle(self.x, self.y,
-                                                     self.x + self.size, self.y + self.size,
+        self.rect_id = self.canvas.create_rectangle(self.x, self.y, self.x+self.size, self.y+self.size,
                                                      fill=self.color, outline="")
-        self.text_id = self.canvas.create_text(self.x + self.size/2, self.y + self.size/2,
+        self.text_id = self.canvas.create_text(self.x+self.size/2, self.y+self.size/2,
                                                  text=self.obj_id, fill="white")
-        # Linksklick-Zerstörung:
+        # Linksklick-Zerstörung
         self.canvas.tag_bind(self.rect_id, "<Button-1>", lambda event, obj=self: obj.destroy())
         self.canvas.tag_bind(self.text_id, "<Button-1>", lambda event, obj=self: obj.destroy())
         if self.genome.get("Schneller Metabolismus"):
-            self.stripe_id = self.canvas.create_line(self.x, self.y,
-                                                      self.x + self.size, self.y + self.size,
+            self.stripe_id = self.canvas.create_line(self.x, self.y, self.x+self.size, self.y+self.size,
                                                       fill="turquoise", width=2)
             self.canvas.tag_bind(self.stripe_id, "<Button-1>", lambda event, obj=self: obj.destroy())
         # Tooltip-Bindings (nur im Pausenmodus)
@@ -70,10 +65,9 @@ class Beute:
         self.schedule_duplication()
 
     def move(self):
-        from globals import paused
         if not self.alive:
             return
-        if paused:
+        if globals.paused:
             self.canvas.after(50, self.move)
             return
         self.vx += random.uniform(-0.5, 0.5)
@@ -103,10 +97,8 @@ class Beute:
         self.canvas.after(50, self.move)
 
     def schedule_duplication(self):
-        from globals import paused
-        if self.immune or paused:
+        if self.immune or globals.paused:
             return
-        # Wenn "essen" fehlt und auch nicht "jagen", keine Duplikation.
         if "essen" not in self.genome and "jagen" not in self.genome:
             return
         if self.genome.get("Schneller Metabolismus"):
@@ -116,16 +108,15 @@ class Beute:
         self.canvas.after(delay, self.duplicate)
 
     def duplicate(self):
-        from globals import paused
         if not self.alive or self.immune:
             return
-        if paused:
+        if globals.paused:
             self.canvas.after(1000, self.duplicate)
             return
         if "essen" not in self.genome and "jagen" not in self.genome:
             return
         child_genome = self.genome.copy()
-        if child_genome and random.random() < mutation_loss_rate:
+        if child_genome and random.random() < globals.mutation_loss_rate:
             lost_gene = random.choice(list(child_genome.keys()))
             del child_genome[lost_gene]
         if "Kooperation" not in child_genome and random.random() < 0.02:
@@ -138,13 +129,11 @@ class Beute:
                 child_genome["Schneller Metabolismus"] = True
         new_child = Beute(self.canvas, self.x, self.y, self.size,
                           generation=self.generation+1, genome=child_genome)
-        from globals import beuten
-        beuten.append(new_child)
+        globals.beuten.append(new_child)
         self.schedule_duplication()
 
     def show_tooltip(self, event):
-        from globals import paused
-        if not paused:
+        if not globals.paused:
             return
         self.tooltip = tk.Toplevel(self.canvas)
         self.tooltip.wm_overrideredirect(True)
@@ -166,7 +155,7 @@ class Beute:
         if not self.blinking:
             return
         current_state = self.canvas.itemcget(self.rect_id, "state")
-        new_state = "hidden" if current_state=="normal" else "normal"
+        new_state = "hidden" if current_state == "normal" else "normal"
         self.canvas.itemconfigure(self.rect_id, state=new_state)
         self.canvas.itemconfigure(self.text_id, state=new_state)
         if self.stripe_id is not None:
@@ -204,17 +193,15 @@ class Jaeger:
         self.fressen_count = 0
         self.duplication_scheduled = False
         self.blinking = False
-        from globals import unique_object_counter
-        unique_object_counter += 1
-        self.obj_id = f"{self.generation}-{unique_object_counter}"
+        globals.unique_object_counter += 1
+        self.obj_id = f"{self.generation}-{globals.unique_object_counter}"
         if "Angriff" in self.genome and self.genome["Angriff"] == "Killer":
             self.color = "#ff0000"
         else:
             self.color = berechne_farbe_jaeger(self.generation)
-        self.oval_id = self.canvas.create_oval(self.x, self.y,
-                                                self.x+self.size, self.y+self.size,
+        self.oval_id = self.canvas.create_oval(self.x, self.y, self.x+self.size, self.y+self.size,
                                                 fill=self.color, outline="")
-        self.text_id = self.canvas.create_text(self.x + self.size/2, self.y + self.size/2,
+        self.text_id = self.canvas.create_text(self.x+self.size/2, self.y+self.size/2,
                                                 text=self.obj_id, fill="white")
         self.canvas.tag_bind(self.oval_id, "<Button-1>", lambda event, obj=self: obj.destroy())
         self.canvas.tag_bind(self.text_id, "<Button-1>", lambda event, obj=self: obj.destroy())
@@ -250,7 +237,7 @@ class Jaeger:
                 jaeger_center_y = self.y + self.size/2
                 dx = prey_center_x - jaeger_center_x
                 dy = prey_center_y - jaeger_center_y
-                distance = (dx**2 + dy**2) ** 0.5
+                distance = (dx**2 + dy**2)**0.5
                 if distance < sense_radius and distance > 0:
                     weight = (sense_radius - distance) / sense_radius
                     ax += dx * weight
@@ -264,7 +251,7 @@ class Jaeger:
         self.vx += random.uniform(-0.5, 0.5)
         self.vy += random.uniform(-0.5, 0.5)
         max_speed = 3 * sprint_multiplier
-        speed = (self.vx**2 + self.vy**2) ** 0.5
+        speed = (self.vx**2 + self.vy**2)**0.5
         if speed > max_speed:
             scale = max_speed/speed
             self.vx *= scale
@@ -282,7 +269,7 @@ class Jaeger:
         elif self.y + self.size > height:
             self.y = height - self.size; self.vy = -self.vy
         self.canvas.coords(self.oval_id, self.x, self.y, self.x+self.size, self.y+self.size)
-        self.canvas.coords(self.text_id, self.x + self.size/2, self.y + self.size/2)
+        self.canvas.coords(self.text_id, self.x+self.size/2, self.y+self.size/2)
         self.canvas.after(50, self.move)
 
     def show_tooltip(self, event):
@@ -323,18 +310,18 @@ class Jaeger:
         if not self.alive or self.fressen_count == 0:
             return
         child_genome = self.genome.copy()
-        if child_genome and random.random() < mutation_loss_rate:
+        if child_genome and random.random() < globals.mutation_loss_rate:
             lost_gene = random.choice(list(child_genome.keys()))
             del child_genome[lost_gene]
         if self.fressen_count >= 6 and "Angriff" not in child_genome and random.random() < 0.05:
             child_genome["Angriff"] = "Killer"
-        from globals import jaegers
         new_child = Jaeger(self.canvas, self.x, self.y, self.size,
                            generation=self.generation+1, genome=child_genome)
         new_child.genome = child_genome
         if "Angriff" in new_child.genome and new_child.genome["Angriff"] == "Killer":
             new_child.color = "#ff0000"
             new_child.canvas.itemconfigure(new_child.oval_id, fill=new_child.color)
+        from globals import jaegers
         jaegers.append(new_child)
         self.fressen_count = 0
         self.duplication_scheduled = False

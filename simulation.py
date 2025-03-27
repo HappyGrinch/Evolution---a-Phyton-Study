@@ -3,21 +3,19 @@
 import tkinter as tk
 import random
 import time
-from globals import beuten, jaegers, simulation_start, simulation_over, unique_object_counter, global_oxygen, global_co2, co2_text_id, available_genomes_beute, available_genomes_jaeger, paused
+import globals
 from entities import Beute, Jaeger
-from globals import mutation_loss_rate
 
 def update_environment(canvas):
-    global global_oxygen, global_co2, beuten, jaegers, co2_text_id, paused
-    if paused:
+    if globals.paused:
         canvas.after(100, lambda: update_environment(canvas))
         return
-    global_co2 = len(jaegers) * 2
-    global_oxygen += len(beuten) * 1
-    for obj in beuten:
+    globals.global_co2 = len(globals.jaegers) * 2
+    globals.global_oxygen += len(globals.beuten) * 1
+    for obj in globals.beuten:
         if obj.genome.get("essen"):
-            if global_co2 >= 1:
-                global_co2 -= 1
+            if globals.global_co2 >= 1:
+                globals.global_co2 -= 1
                 if obj.starving:
                     obj.starving = False
                     if obj.starve_job is not None:
@@ -26,12 +24,12 @@ def update_environment(canvas):
             else:
                 if not obj.starving:
                     obj.starving = True
-                    delay = random.randint(1000,3000)
+                    delay = random.randint(1000, 3000)
                     obj.starve_job = obj.canvas.after(delay, lambda o=obj: o.destroy())
                     obj.start_blinking()
-    if global_co2 < 0:
-        global_co2 = 0
-    canvas.itemconfigure(co2_text_id, text="CO2: " + str(global_co2))
+    if globals.global_co2 < 0:
+        globals.global_co2 = 0
+    canvas.itemconfigure(globals.co2_text_id, text="CO2: " + str(globals.global_co2))
     canvas.after(1000, lambda: update_environment(canvas))
 
 def kollidieren(obj1, obj2):
@@ -41,22 +39,21 @@ def kollidieren(obj1, obj2):
             obj1.y + obj1.size > obj2.y)
 
 def check_collisions(canvas):
-    global beuten, jaegers, simulation_over, simulation_start, paused
-    if paused:
+    if globals.paused:
         canvas.after(100, lambda: check_collisions(canvas))
         return
-    if simulation_over:
+    if globals.simulation_over:
         return
     current_time = time.time()
     to_remove_beute = set()
-    for j in jaegers:
+    for j in globals.jaegers:
         if "jagen" not in j.genome:
             continue
-        if current_time - j.last_meal > 60:
+        if current_time - globals.simulation_start > 60:
             j.destroy()
             continue
         if j.fressen_count < 6:
-            for b in beuten:
+            for b in globals.beuten:
                 if b.immune and not ("Angriff" in j.genome and j.genome["Angriff"]=="Killer"):
                     continue
                 if b.alive and kollidieren(j, b):
@@ -67,17 +64,17 @@ def check_collisions(canvas):
                     if not j.duplication_scheduled:
                         j.duplication_scheduled = True
                         j.start_blinking()
-                        delay = random.randint(1000,30000)
+                        delay = random.randint(1000, 30000)
                         j.canvas.after(delay, j.duplicate)
     for b in to_remove_beute:
         b.destroy()
-    beuten[:] = [b for b in beuten if b.alive]
-    jaegers[:] = [j for j in jaegers if j.alive]
-    n = len(beuten)
+    globals.beuten[:] = [b for b in globals.beuten if b.alive]
+    globals.jaegers[:] = [j for j in globals.jaegers if j.alive]
+    n = len(globals.beuten)
     for i in range(n):
         for k in range(i+1, n):
-            b1 = beuten[i]
-            b2 = beuten[k]
+            b1 = globals.beuten[i]
+            b2 = globals.beuten[k]
             if not b1.alive or not b2.alive:
                 continue
             if b1.genome.get("Kooperation") is True and not b1.immune:
@@ -88,15 +85,15 @@ def check_collisions(canvas):
                     b1.canvas.itemconfigure(b1.rect_id, fill="#FFD700")
                     b1.canvas.coords(b1.rect_id, b1.x, b1.y, b1.x+b1.size, b1.y+b1.size)
                     b2.destroy()
-    beuten[:] = [b for b in beuten if b.alive]
-    if len(beuten) == 0 or len(jaegers) == 0:
-        simulation_over = True
-        winner = "Jäger" if len(beuten)==0 else "Beute"
-        sim_time = current_time - simulation_start
+    globals.beuten[:] = [b for b in globals.beuten if b.alive]
+    if len(globals.beuten) == 0 or len(globals.jaegers) == 0:
+        globals.simulation_over = True
+        winner = "Jäger" if len(globals.beuten)==0 else "Beute"
+        sim_time = current_time - globals.simulation_start
         message = f"Der Sieger: {winner}\nZeit: {sim_time:.1f} Sekunden\n"
-        message += f"\nGesamter Sauerstoff: {global_oxygen} Einheiten"
-        message += f"\nGesamtes Kohlendioxid: {global_co2} Einheiten"
-        remaining = jaegers if winner=="Jäger" else beuten
+        message += f"\nGesamter Sauerstoff: {globals.global_oxygen} Einheiten"
+        message += f"\nGesamtes Kohlendioxid: {globals.global_co2} Einheiten"
+        remaining = globals.jaegers if winner=="Jäger" else globals.beuten
         for obj in remaining:
             genome_list = ", ".join([f"{k}" if obj.genome[k] is True else f"{k}:{obj.genome[k]}" for k in obj.genome])
             message += f"\n{obj.obj_id} ({genome_list})"
@@ -108,17 +105,17 @@ def check_collisions(canvas):
         canvas.after(100, lambda: check_collisions(canvas))
 
 def toggle_pause(event):
-    global paused
-    paused = not paused
+    import globals
+    globals.paused = not globals.paused
 
 def simulation_page(beute_configs, jaeger_configs):
-    global beuten, jaegers, simulation_start, simulation_over, unique_object_counter, global_oxygen, global_co2, co2_text_id
-    beuten.clear()
-    jaegers.clear()
-    simulation_over = False
-    unique_object_counter = 0
-    global_oxygen = 0
-    global_co2 = 0
+    import globals
+    globals.beuten.clear()
+    globals.jaegers.clear()
+    globals.simulation_over = False
+    globals.unique_object_counter = 0
+    globals.global_oxygen = 0
+    globals.global_co2 = 0
     root = tk.Tk()
     root.title("Simulation")
     root.attributes("-fullscreen", True)
@@ -131,31 +128,30 @@ def simulation_page(beute_configs, jaeger_configs):
     root.update()
     canvas.create_text(10, 10, text="Prototyp Evolution by Andreas Wahl\nChatgpt O3 High\nVersion 0.26",
                        anchor="nw", fill="black", font=("Helvetica",9))
-    co2_text_id = canvas.create_text(screen_width - 10, 10, text="CO2: " + str(global_co2),
-                                      anchor="ne", fill="black", font=("Helvetica",11))
-    global simulation_start
-    simulation_start = time.time()
+    globals.co2_text_id = canvas.create_text(screen_width - 10, 10, text="CO2: " + str(globals.global_co2),
+                                              anchor="ne", fill="black", font=("Helvetica",11))
+    globals.simulation_start = time.time()
     beute_x = 50
     num_beute = len(beute_configs)
     for config in beute_configs:
-        for key in available_genomes_beute:
+        for key in globals.available_genomes_beute:
             if key not in config:
                 config[key] = False
     for config in jaeger_configs:
-        for key in available_genomes_jaeger:
+        for key in globals.available_genomes_jaeger:
             if key not in config:
                 config[key] = False
 
     for i, config in enumerate(beute_configs):
         y = (i+1) * screen_height / (num_beute+1)
         new_beute = Beute(canvas, beute_x, y, genome=config)
-        beuten.append(new_beute)
+        globals.beuten.append(new_beute)
     jaeger_x = screen_width - 70
     num_jaeger = len(jaeger_configs)
     for i, config in enumerate(jaeger_configs):
         y = (i+1) * screen_height / (num_jaeger+1)
         new_jaeger = Jaeger(canvas, jaeger_x, y, genome=config)
-        jaegers.append(new_jaeger)
+        globals.jaegers.append(new_jaeger)
     canvas.after(100, lambda: check_collisions(canvas))
     canvas.after(1000, lambda: update_environment(canvas))
     root.mainloop()
