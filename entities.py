@@ -26,7 +26,7 @@ class Beute:
         self.x = x
         self.y = y
         self.generation = generation
-        # Wenn kein Genom übergeben wird, werden nur "essen" und "bewegen" gesetzt.
+        # Wenn kein Genom übergeben wird, nur "essen" und "bewegen" setzen.
         if genome is None:
             self.genome = {"essen": True, "bewegen": True}
         else:
@@ -116,7 +116,7 @@ class Beute:
         if "essen" not in self.genome and "jagen" not in self.genome:
             return
         child_genome = self.genome.copy()
-        # Berücksichtige nur aktive Gene
+        # Nur aktive Gene berücksichtigen:
         active_genes = [gene for gene, value in child_genome.items() if value]
         if active_genes and random.random() < globals.mutation_loss_rate:
             lost_gene = random.choice(active_genes)
@@ -227,7 +227,7 @@ class Jaeger:
             self.canvas.after(50, self.move)
             return
         if "Orientierung" in self.genome and self.genome["Orientierung"] == "riechen":
-            # Geänderter sense_radius: 200
+            # Setze sense_radius auf 200
             sense_radius = 200
             ax, ay = 0, 0
             count = 0
@@ -247,8 +247,8 @@ class Jaeger:
                     ay += dy * weight
                     count += 1
             if count > 0:
-                # Erhöhter smell_factor: 0.1 statt 0.05
-                smell_factor = 0.1
+                # Setze smell_factor auf 0.5
+                smell_factor = 0.5
                 self.vx += smell_factor * ax
                 self.vy += smell_factor * ay
         sprint_multiplier = 1.5 if self.genome.get("Fortbewegung") == "sprinten" else 1.0
