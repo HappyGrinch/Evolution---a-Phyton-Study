@@ -112,7 +112,7 @@ def toggle_pause(event):
     paused = not paused
 
 def simulation_page(beute_configs, jaeger_configs):
-    from globals import beuten, jaegers, simulation_start, simulation_over, unique_object_counter, global_oxygen, global_co2, co2_text_id, available_genomes_beute, available_genomes_jaeger, paused
+    global beuten, jaegers, simulation_start, simulation_over, unique_object_counter, global_oxygen, global_co2, co2_text_id
     beuten.clear()
     jaegers.clear()
     simulation_over = False
@@ -133,9 +133,8 @@ def simulation_page(beute_configs, jaeger_configs):
                        anchor="nw", fill="black", font=("Helvetica",9))
     co2_text_id = canvas.create_text(screen_width - 10, 10, text="CO2: " + str(global_co2),
                                       anchor="ne", fill="black", font=("Helvetica",11))
-	
-global simulation_start    
-simulation_start = time.time()
+    global simulation_start
+    simulation_start = time.time()
     beute_x = 50
     num_beute = len(beute_configs)
     for config in beute_configs:
