@@ -11,7 +11,6 @@ def update_environment(canvas):
     if globals.paused:
         canvas.after(100, lambda: update_environment(canvas))
         return
-     # Jeder Jäger produziert jetzt 4 Einheiten CO2 pro Sekunde
     globals.global_co2 = len(globals.jaegers) * 4
     globals.global_oxygen += len(globals.beuten) * 1
     for obj in globals.beuten:
@@ -51,13 +50,12 @@ def check_collisions(canvas):
     for j in globals.jaegers:
         if "jagen" not in j.genome:
             continue
-        # Hier wird nun individuell geprüft:
-        if current_time - j.last_meal > 60:
+        if current_time - globals.simulation_start > 60:
             j.destroy()
             continue
         if j.fressen_count < 6:
             for b in globals.beuten:
-                if b.immune and not ("Angriff" in j.genome and j.genome["Angriff"] == "Killer"):
+                if b.immune and not ("Angriff" in j.genome and j.genome["Angriff"]=="Killer"):
                     continue
                 if b.alive and kollidieren(j, b):
                     to_remove_beute.add(b)
@@ -86,22 +84,22 @@ def check_collisions(canvas):
                     b1.immune = True
                     del b1.genome["Kooperation"]
                     b1.canvas.itemconfigure(b1.rect_id, fill="#FFD700")
-                    b1.canvas.coords(b1.rect_id, b1.x, b1.y, b1.x + b1.size, b1.y + b1.size)
+                    b1.canvas.coords(b1.rect_id, b1.x, b1.y, b1.x+b1.size, b1.y+b1.size)
                     b2.destroy()
     globals.beuten[:] = [b for b in globals.beuten if b.alive]
     if len(globals.beuten) == 0 or len(globals.jaegers) == 0:
         globals.simulation_over = True
-        winner = "Jäger" if len(globals.beuten) == 0 else "Beute"
+        winner = "Jäger" if len(globals.beuten)==0 else "Beute"
         sim_time = current_time - globals.simulation_start
         message = f"Der Sieger: {winner}\nZeit: {sim_time:.1f} Sekunden\n"
         message += f"\nGesamter Sauerstoff: {globals.global_oxygen} Einheiten"
         message += f"\nGesamtes Kohlendioxid: {globals.global_co2} Einheiten"
-        remaining = globals.jaegers if winner == "Jäger" else globals.beuten
+        remaining = globals.jaegers if winner=="Jäger" else globals.beuten
         for obj in remaining:
             genome_list = ", ".join([f"{k}" if obj.genome[k] is True else f"{k}:{obj.genome[k]}" for k in obj.genome])
             message += f"\n{obj.obj_id} ({genome_list})"
         canvas.create_text(canvas.winfo_width()/2, canvas.winfo_height()/2,
-                           text=message, fill="black", font=("Helvetica", 10))
+                           text=message, fill="black", font=("Helvetica",10))
         end_btn = tk.Button(canvas.master, text="Simulation beenden", command=canvas.master.destroy)
         canvas.create_window(canvas.winfo_width()/2, canvas.winfo_height()-30, window=end_btn)
     else:

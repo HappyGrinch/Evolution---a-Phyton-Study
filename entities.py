@@ -217,65 +217,63 @@ class Jaeger:
             self.move()
 
     def move(self):
-    from globals import paused, beuten
-    if not self.alive:
-        return
-    if paused:
+        from globals import paused, beuten
+        if not self.alive:
+            return
+        if paused:
+            self.canvas.after(50, self.move)
+            return
+        if "Fortbewegung" not in self.genome:
+            self.canvas.after(50, self.move)
+            return
+        if "Orientierung" in self.genome and self.genome["Orientierung"] == "riechen":
+            sense_radius = 200
+            ax, ay = 0, 0
+            count = 0
+            for prey in beuten:
+                if not prey.alive or prey.genome.get("geruchlos", False):
+                    continue
+                prey_center_x = prey.x + prey.size/2
+                prey_center_y = prey.y + prey.size/2
+                jaeger_center_x = self.x + self.size/2
+                jaeger_center_y = self.y + self.size/2
+                dx = prey_center_x - jaeger_center_x
+                dy = prey_center_y - jaeger_center_y
+                distance = (dx**2 + dy**2)**0.5
+                if distance < sense_radius and distance > 0:
+                    weight = (sense_radius - distance) / sense_radius
+                    ax += dx * weight
+                    ay += dy * weight
+                    count += 1
+            if count > 0:
+                smell_factor = 0.5
+                print(f"Jäger {self.obj_id} riecht: ax={ax:.2f}, ay={ay:.2f}, count={count}")
+                self.vx += smell_factor * ax
+                self.vy += smell_factor * ay
+        sprint_multiplier = 1.5 if self.genome.get("Fortbewegung") == "sprinten" else 1.0
+        self.vx += random.uniform(-0.5, 0.5)
+        self.vy += random.uniform(-0.5, 0.5)
+        max_speed = 3 * sprint_multiplier
+        speed = (self.vx**2 + self.vy**2)**0.5
+        if speed > max_speed:
+            scale = max_speed/speed
+            self.vx *= scale
+            self.vy *= scale
+        self.x += self.vx
+        self.y += self.vy
+        width = self.canvas.winfo_screenwidth()
+        height = self.canvas.winfo_screenheight()
+        if self.x < 0:
+            self.x = 0; self.vx = -self.vx
+        elif self.x + self.size > width:
+            self.x = width - self.size; self.vx = -self.vx
+        if self.y < 0:
+            self.y = 0; self.vy = -self.vy
+        elif self.y + self.size > height:
+            self.y = height - self.size; self.vy = -self.vy
+        self.canvas.coords(self.oval_id, self.x, self.y, self.x+self.size, self.y+self.size)
+        self.canvas.coords(self.text_id, self.x+self.size/2, self.y+self.size/2)
         self.canvas.after(50, self.move)
-        return
-    if "Fortbewegung" not in self.genome:
-        self.canvas.after(50, self.move)
-        return
-    if "Orientierung" in self.genome and self.genome["Orientierung"] == "riechen":
-        # sense_radius auf 200 gesetzt
-        sense_radius = 200
-        ax, ay = 0, 0
-        count = 0
-        for prey in beuten:
-            # Hier prüfen wir jetzt den Wert von "geruchlos"
-            if not prey.alive or prey.genome.get("geruchlos", False):
-                continue
-            prey_center_x = prey.x + prey.size/2
-            prey_center_y = prey.y + prey.size/2
-            jaeger_center_x = self.x + self.size/2
-            jaeger_center_y = self.y + self.size/2
-            dx = prey_center_x - jaeger_center_x
-            dy = prey_center_y - jaeger_center_y
-            distance = (dx**2 + dy**2)**0.5
-            if distance < sense_radius and distance > 0:
-                weight = (sense_radius - distance) / sense_radius
-                ax += dx * weight
-                ay += dy * weight
-                count += 1
-        if count > 0:
-            smell_factor = 0.5
-            print(f"Jäger {self.obj_id} riecht: ax={ax:.2f}, ay={ay:.2f}, count={count}")
-            self.vx += smell_factor * ax
-            self.vy += smell_factor * ay
-    sprint_multiplier = 1.5 if self.genome.get("Fortbewegung") == "sprinten" else 1.0
-    self.vx += random.uniform(-0.5, 0.5)
-    self.vy += random.uniform(-0.5, 0.5)
-    max_speed = 3 * sprint_multiplier
-    speed = (self.vx**2 + self.vy**2)**0.5
-    if speed > max_speed:
-        scale = max_speed/speed
-        self.vx *= scale
-        self.vy *= scale
-    self.x += self.vx
-    self.y += self.vy
-    width = self.canvas.winfo_screenwidth()
-    height = self.canvas.winfo_screenheight()
-    if self.x < 0:
-        self.x = 0; self.vx = -self.vx
-    elif self.x + self.size > width:
-        self.x = width - self.size; self.vx = -self.vx
-    if self.y < 0:
-        self.y = 0; self.vy = -self.vy
-    elif self.y + self.size > height:
-        self.y = height - self.size; self.vy = -self.vy
-    self.canvas.coords(self.oval_id, self.x, self.y, self.x+self.size, self.y+self.size)
-    self.canvas.coords(self.text_id, self.x+self.size/2, self.y+self.size/2)
-    self.canvas.after(50, self.move)
 
     def show_tooltip(self, event):
         from globals import paused
