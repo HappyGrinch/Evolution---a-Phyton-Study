@@ -26,7 +26,7 @@ class Beute:
         self.x = x
         self.y = y
         self.generation = generation
-        # Wenn kein Genom übergeben wird, nur "essen" und "bewegen" setzen.
+        # Wenn kein Genom übergeben wird, werden nur "essen" und "bewegen" gesetzt.
         if genome is None:
             self.genome = {"essen": True, "bewegen": True}
         else:
@@ -99,7 +99,6 @@ class Beute:
     def schedule_duplication(self):
         if self.immune or globals.paused:
             return
-        # Wenn "essen" fehlt und auch nicht "jagen", keine Duplikation.
         if "essen" not in self.genome and "jagen" not in self.genome:
             return
         if self.genome.get("Schneller Metabolismus"):
@@ -117,7 +116,7 @@ class Beute:
         if "essen" not in self.genome and "jagen" not in self.genome:
             return
         child_genome = self.genome.copy()
-        # Nur aktive Gene berücksichtigen:
+        # Berücksichtige nur aktive Gene
         active_genes = [gene for gene, value in child_genome.items() if value]
         if active_genes and random.random() < globals.mutation_loss_rate:
             lost_gene = random.choice(active_genes)
@@ -228,7 +227,8 @@ class Jaeger:
             self.canvas.after(50, self.move)
             return
         if "Orientierung" in self.genome and self.genome["Orientierung"] == "riechen":
-            sense_radius = 150
+            # Geänderter sense_radius: 200
+            sense_radius = 200
             ax, ay = 0, 0
             count = 0
             for prey in beuten:
@@ -247,7 +247,8 @@ class Jaeger:
                     ay += dy * weight
                     count += 1
             if count > 0:
-                smell_factor = 0.05
+                # Erhöhter smell_factor: 0.1 statt 0.05
+                smell_factor = 0.1
                 self.vx += smell_factor * ax
                 self.vy += smell_factor * ay
         sprint_multiplier = 1.5 if self.genome.get("Fortbewegung") == "sprinten" else 1.0
@@ -336,4 +337,3 @@ class Jaeger:
             self.alive = False
             self.canvas.delete(self.oval_id)
             self.canvas.delete(self.text_id)
-
