@@ -228,7 +228,7 @@ class Jaeger:
             return
         if "Orientierung" in self.genome and self.genome["Orientierung"] == "riechen":
             # Setze sense_radius auf 200
-            sense_radius = 200
+            sense_radius = 400
             ax, ay = 0, 0
             count = 0
             for prey in beuten:
