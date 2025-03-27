@@ -121,7 +121,7 @@ class Beute:
         if active_genes and random.random() < globals.mutation_loss_rate:
             lost_gene = random.choice(active_genes)
             del child_genome[lost_gene]
-        if "Kooperation" not in child_genome and random.random() < globals.prey_cooperation_probability:
+        if child_genome.get("Kooperation", False) is not True and random.random() < globals.prey_cooperation_probability:
             child_genome["Kooperation"] = True
         if "Schneller Metabolismus" in self.genome:
             if random.random() >= 1 - globals.prey_schneller_metabolismus_probability:
