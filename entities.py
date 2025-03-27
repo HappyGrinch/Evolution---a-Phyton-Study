@@ -227,8 +227,8 @@ class Jaeger:
             self.canvas.after(50, self.move)
             return
         if "Orientierung" in self.genome and self.genome["Orientierung"] == "riechen":
-            # Setze sense_radius auf 200
-            sense_radius = 400
+            # sense_radius auf 200 gesetzt
+            sense_radius = 200
             ax, ay = 0, 0
             count = 0
             for prey in beuten:
@@ -247,8 +247,9 @@ class Jaeger:
                     ay += dy * weight
                     count += 1
             if count > 0:
-                # Setze smell_factor auf 0.5
-                smell_factor = 1
+                # smell_factor erhöht auf 0.5
+                smell_factor = 0.5
+                # Debug-Ausgabe zum Geruchseffekt:
                 print(f"Jäger {self.obj_id} riecht: ax={ax:.2f}, ay={ay:.2f}, count={count}")
                 self.vx += smell_factor * ax
                 self.vy += smell_factor * ay

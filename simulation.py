@@ -11,7 +11,8 @@ def update_environment(canvas):
     if globals.paused:
         canvas.after(100, lambda: update_environment(canvas))
         return
-    globals.global_co2 = len(globals.jaegers) * 2
+     # Jeder Jäger produziert jetzt 4 Einheiten CO2 pro Sekunde
+    globals.global_co2 = len(globals.jaegers) * 4
     globals.global_oxygen += len(globals.beuten) * 1
     for obj in globals.beuten:
         if obj.genome.get("essen"):
