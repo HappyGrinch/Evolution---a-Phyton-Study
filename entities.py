@@ -26,7 +26,7 @@ class Beute:
         self.x = x
         self.y = y
         self.generation = generation
-        # Wenn kein Genom übergeben wird, werden nur "essen" und "bewegen" gesetzt.
+        # Wenn kein Genom übergeben wird, nur "essen" und "bewegen" setzen.
         if genome is None:
             self.genome = {"essen": True, "bewegen": True}
         else:
@@ -46,7 +46,7 @@ class Beute:
                                                      fill=self.color, outline="")
         self.text_id = self.canvas.create_text(self.x+self.size/2, self.y+self.size/2,
                                                  text=self.obj_id, fill="white")
-        # Linksklick-Zerstörung
+        # Linksklick-Zerstörung:
         self.canvas.tag_bind(self.rect_id, "<Button-1>", lambda event, obj=self: obj.destroy())
         self.canvas.tag_bind(self.text_id, "<Button-1>", lambda event, obj=self: obj.destroy())
         if self.genome.get("Schneller Metabolismus"):
@@ -99,6 +99,7 @@ class Beute:
     def schedule_duplication(self):
         if self.immune or globals.paused:
             return
+        # Wenn "essen" fehlt und auch nicht "jagen", keine Duplikation.
         if "essen" not in self.genome and "jagen" not in self.genome:
             return
         if self.genome.get("Schneller Metabolismus"):
@@ -116,8 +117,10 @@ class Beute:
         if "essen" not in self.genome and "jagen" not in self.genome:
             return
         child_genome = self.genome.copy()
-        if child_genome and random.random() < globals.mutation_loss_rate:
-            lost_gene = random.choice(list(child_genome.keys()))
+        # Nur aktive Gene berücksichtigen:
+        active_genes = [gene for gene, value in child_genome.items() if value]
+        if active_genes and random.random() < globals.mutation_loss_rate:
+            lost_gene = random.choice(active_genes)
             del child_genome[lost_gene]
         if "Kooperation" not in child_genome and random.random() < 0.02:
             child_genome["Kooperation"] = True
@@ -310,8 +313,9 @@ class Jaeger:
         if not self.alive or self.fressen_count == 0:
             return
         child_genome = self.genome.copy()
-        if child_genome and random.random() < globals.mutation_loss_rate:
-            lost_gene = random.choice(list(child_genome.keys()))
+        active_genes = [gene for gene, value in child_genome.items() if value]
+        if active_genes and random.random() < globals.mutation_loss_rate:
+            lost_gene = random.choice(active_genes)
             del child_genome[lost_gene]
         if self.fressen_count >= 6 and "Angriff" not in child_genome and random.random() < 0.05:
             child_genome["Angriff"] = "Killer"
