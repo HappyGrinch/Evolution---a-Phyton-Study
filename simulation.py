@@ -131,7 +131,9 @@ def simulation_page(beute_configs, jaeger_configs):
     globals.co2_text_id = canvas.create_text(screen_width - 10, 10, text="CO2: " + str(globals.global_co2),
                                               anchor="ne", fill="black", font=("Helvetica",11))
     globals.simulation_start = time.time()
+    # Setze die X-Positionen so, dass der Abstand maximal 800 Pixel beträgt.
     beute_x = 50
+    jaeger_x = beute_x + 800  # Jäger werden 800 Pixel rechts von der Beute platziert.
     num_beute = len(beute_configs)
     for config in beute_configs:
         for key in globals.available_genomes_beute:
@@ -146,7 +148,6 @@ def simulation_page(beute_configs, jaeger_configs):
         y = (i+1) * screen_height / (num_beute+1)
         new_beute = Beute(canvas, beute_x, y, genome=config)
         globals.beuten.append(new_beute)
-    jaeger_x = screen_width - 70
     num_jaeger = len(jaeger_configs)
     for i, config in enumerate(jaeger_configs):
         y = (i+1) * screen_height / (num_jaeger+1)
