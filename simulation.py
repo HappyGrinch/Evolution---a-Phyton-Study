@@ -48,11 +48,11 @@ def check_collisions(canvas):
     current_time = time.time()
     to_remove_beute = set()
     for j in globals.jaegers:
-        if "jagen" not in j.genome:
-            continue
-        if current_time - globals.simulation_start > 60:
-            j.destroy()
-            continue
+     if "jagen" not in j.genome:
+        continue
+     if current_time - j.last_meal > 60:
+        j.destroy()
+        continue
         if j.fressen_count < 6:
             for b in globals.beuten:
                 if b.immune and not ("Angriff" in j.genome and j.genome["Angriff"]=="Killer"):
