@@ -48,18 +48,18 @@ def check_collisions(canvas):
     current_time = time.time()
     to_remove_beute = set()
     for j in globals.jaegers:
-     if "jagen" not in j.genome:
-        continue
-     if current_time - j.last_meal > 60:
-        j.destroy()
-        continue
+        if "jagen" not in j.genome:
+            continue
+        if current_time - j.last_meal > 60:
+            j.destroy()
+            continue
         if j.fressen_count < 6:
             for b in globals.beuten:
-                if b.immune and not ("Angriff" in j.genome and j.genome["Angriff"]=="Killer"):
+                if b.immune and not ("Angriff" in j.genome and j.genome["Angriff"] == "Killer"):
                     continue
                 if b.alive and kollidieren(j, b):
                     to_remove_beute.add(b)
-                    j.last_meal = current_time
+                    j.last_meal = current_time  # Timer zurücksetzen
                     if j.fressen_count < 6:
                         j.fressen_count += 1
                     if not j.duplication_scheduled:
@@ -89,17 +89,17 @@ def check_collisions(canvas):
     globals.beuten[:] = [b for b in globals.beuten if b.alive]
     if len(globals.beuten) == 0 or len(globals.jaegers) == 0:
         globals.simulation_over = True
-        winner = "Jäger" if len(globals.beuten)==0 else "Beute"
+        winner = "Jäger" if len(globals.beuten) == 0 else "Beute"
         sim_time = current_time - globals.simulation_start
         message = f"Der Sieger: {winner}\nZeit: {sim_time:.1f} Sekunden\n"
         message += f"\nGesamter Sauerstoff: {globals.global_oxygen} Einheiten"
         message += f"\nGesamtes Kohlendioxid: {globals.global_co2} Einheiten"
-        remaining = globals.jaegers if winner=="Jäger" else globals.beuten
+        remaining = globals.jaegers if winner == "Jäger" else globals.beuten
         for obj in remaining:
             genome_list = ", ".join([f"{k}" if obj.genome[k] is True else f"{k}:{obj.genome[k]}" for k in obj.genome])
             message += f"\n{obj.obj_id} ({genome_list})"
         canvas.create_text(canvas.winfo_width()/2, canvas.winfo_height()/2,
-                           text=message, fill="black", font=("Helvetica",10))
+                           text=message, fill="black", font=("Helvetica", 10))
         end_btn = tk.Button(canvas.master, text="Simulation beenden", command=canvas.master.destroy)
         canvas.create_window(canvas.winfo_width()/2, canvas.winfo_height()-30, window=end_btn)
     else:
