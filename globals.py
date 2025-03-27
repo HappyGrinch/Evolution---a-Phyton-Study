@@ -20,6 +20,11 @@ paused = False
 # Mutationseinstellungen
 mutation_loss_rate = 0.03  # Standard: 3% (wird in config.py überschrieben)
 
+# Gewinn-Wahrscheinlichkeiten für Genome (als Fließkommazahlen, z.B. 0.02 entspricht 2%)
+prey_cooperation_probability = 0.02
+prey_schneller_metabolismus_probability = 0.04
+jaeger_angriff_probability = 0.05
+
 # Mögliche Genome und Default-Einstellungen
 available_genomes_beute = ["essen", "bewegen", "Kooperation", "Schneller Metabolismus", "geruchlos"]
 # Wichtig: "Kooperation" wird absichtlich NICHT in den Default-Werten gesetzt,

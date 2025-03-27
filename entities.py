@@ -121,13 +121,13 @@ class Beute:
         if active_genes and random.random() < globals.mutation_loss_rate:
             lost_gene = random.choice(active_genes)
             del child_genome[lost_gene]
-        if "Kooperation" not in child_genome and random.random() < 0.02:
+        if "Kooperation" not in child_genome and random.random() < globals.prey_cooperation_probability:
             child_genome["Kooperation"] = True
         if "Schneller Metabolismus" in self.genome:
-            if random.random() >= 0.20:
+            if random.random() >= 1 - globals.prey_schneller_metabolismus_probability:
                 child_genome.pop("Schneller Metabolismus", None)
         else:
-            if random.random() < 0.04:
+            if random.random() < globals.prey_schneller_metabolismus_probability:
                 child_genome["Schneller Metabolismus"] = True
         new_child = Beute(self.canvas, self.x, self.y, self.size,
                           generation=self.generation+1, genome=child_genome)
@@ -317,7 +317,7 @@ class Jaeger:
         if active_genes and random.random() < globals.mutation_loss_rate:
             lost_gene = random.choice(active_genes)
             del child_genome[lost_gene]
-        if self.fressen_count >= 6 and "Angriff" not in child_genome and random.random() < 0.05:
+        if self.fressen_count >= 6 and "Angriff" not in child_genome and random.random() < globals.jaeger_angriff_probability:
             child_genome["Angriff"] = "Killer"
         new_child = Jaeger(self.canvas, self.x, self.y, self.size,
                            generation=self.generation+1, genome=child_genome)
@@ -330,6 +330,7 @@ class Jaeger:
         self.fressen_count = 0
         self.duplication_scheduled = False
         self.stop_blinking()
+
 
     def destroy(self):
         if self.alive:

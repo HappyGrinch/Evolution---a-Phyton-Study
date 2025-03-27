@@ -57,10 +57,24 @@ def config_page():
     mutation_loss_var = tk.StringVar(value="3")
     tk.Entry(config_root, textvariable=mutation_loss_var, width=5).grid(row=2, column=1, sticky="w")
     
+    # Neue Felder für die Gewinnwahrscheinlichkeiten (in Prozent)
+    tk.Label(config_root, text="Beute Kooperation Wahrscheinlichkeit [%]:").grid(row=3, column=0, sticky="w")
+    prey_coop_prob_var = tk.StringVar(value="2")  # Standard 2%
+    tk.Entry(config_root, textvariable=prey_coop_prob_var, width=5).grid(row=3, column=1, sticky="w")
+    
+    tk.Label(config_root, text="Beute Schneller Metabolismus Wahrscheinlichkeit [%]:").grid(row=4, column=0, sticky="w")
+    prey_sm_prob_var = tk.StringVar(value="4")  # Standard 4%
+    tk.Entry(config_root, textvariable=prey_sm_prob_var, width=5).grid(row=4, column=1, sticky="w")
+    
+    tk.Label(config_root, text="Jäger Angriff Wahrscheinlichkeit [%]:").grid(row=5, column=0, sticky="w")
+    jaeger_angriff_prob_var = tk.StringVar(value="5")  # Standard 5%
+    tk.Entry(config_root, textvariable=jaeger_angriff_prob_var, width=5).grid(row=5, column=1, sticky="w")
+    
+    # Frames für die dynamische Konfiguration der Genome
     beute_frame = tk.LabelFrame(config_root, text="Beute Genome")
-    beute_frame.grid(row=3, column=0, columnspan=2, padx=10, pady=5, sticky="we")
+    beute_frame.grid(row=6, column=0, columnspan=2, padx=10, pady=5, sticky="we")
     jaeger_frame = tk.LabelFrame(config_root, text="Jäger Genome")
-    jaeger_frame.grid(row=4, column=0, columnspan=2, padx=10, pady=5, sticky="we")
+    jaeger_frame.grid(row=7, column=0, columnspan=2, padx=10, pady=5, sticky="we")
     
     beute_vars = []
     jaeger_vars = []
@@ -84,7 +98,7 @@ def config_page():
     update_frames()
     
     def start_simulation():
-        from globals import mutation_loss_rate
+        from globals import mutation_loss_rate, prey_cooperation_probability, prey_schneller_metabolismus_probability, jaeger_angriff_probability
         try:
             num_beute = int(beute_count_var.get())
             num_jaeger = int(jaeger_count_var.get())
@@ -94,6 +108,29 @@ def config_page():
             num_jaeger = 3
             mut_loss_percent = 3.0
         mutation_loss_rate = mut_loss_percent / 100.0
+        try:
+            prey_coop = float(prey_coop_prob_var.get())
+        except:
+            prey_coop = 2.0
+        prey_cooperation_probability = prey_coop / 100.0
+        try:
+            prey_sm = float(prey_sm_prob_var.get())
+        except:
+            prey_sm = 4.0
+        prey_schneller_metabolismus_probability = prey_sm / 100.0
+        try:
+            jaeger_angriff = float(jaeger_angriff_prob_var.get())
+        except:
+            jaeger_angriff = 5.0
+        jaeger_angriff_probability = jaeger_angriff / 100.0
+        
+        # Speichere diese Werte in globals (überschreibe die Standardwerte)
+        import globals as g
+        g.mutation_loss_rate = mutation_loss_rate
+        g.prey_cooperation_probability = prey_cooperation_probability
+        g.prey_schneller_metabolismus_probability = prey_schneller_metabolismus_probability
+        g.jaeger_angriff_probability = jaeger_angriff_probability
+
         beute_configs = []
         for i in range(num_beute):
             if i < len(beute_vars):
@@ -128,7 +165,7 @@ def config_page():
         simulation_page(beute_configs, jaeger_configs)
     
     start_button = tk.Button(config_root, text="Simulation starten", command=start_simulation)
-    start_button.grid(row=5, column=0, columnspan=2, pady=10)
+    start_button.grid(row=8, column=0, columnspan=2, pady=10)
     
     config_root.mainloop()
 
