@@ -248,7 +248,8 @@ class Jaeger:
                     count += 1
             if count > 0:
                 # Setze smell_factor auf 0.5
-                smell_factor = 0.5
+                smell_factor = 1
+                print(f"Jäger {self.obj_id} riecht: ax={ax:.2f}, ay={ay:.2f}, count={count}")
                 self.vx += smell_factor * ax
                 self.vy += smell_factor * ay
         sprint_multiplier = 1.5 if self.genome.get("Fortbewegung") == "sprinten" else 1.0
