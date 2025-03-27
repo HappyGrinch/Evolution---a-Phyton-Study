@@ -133,7 +133,9 @@ def simulation_page(beute_configs, jaeger_configs):
                        anchor="nw", fill="black", font=("Helvetica",9))
     co2_text_id = canvas.create_text(screen_width - 10, 10, text="CO2: " + str(global_co2),
                                       anchor="ne", fill="black", font=("Helvetica",11))
-    simulation_start = time.time()
+	
+global simulation_start    
+simulation_start = time.time()
     beute_x = 50
     num_beute = len(beute_configs)
     for config in beute_configs:
