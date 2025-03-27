@@ -2,6 +2,7 @@
 
 import tkinter as tk
 import random
+import time
 from globals import mutation_loss_rate, paused, unique_object_counter
 
 def berechne_farbe_beute(generation):
